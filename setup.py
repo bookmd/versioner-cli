@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='versioner-cli',
-      version='1.0.0a1',
+      version='1.0.1',
       description='cli tool to interact with versioner service',
       author='Ben Waters',
       author_email='ben@book-md.com',
