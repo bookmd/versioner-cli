@@ -10,6 +10,8 @@ def main():
     parser = argparse.ArgumentParser(description='Tool to communicate with versioner web api')
     parser.add_argument('build_type', help='The type of build: development, master, or branch')
     parser.add_argument('--branch-name', help='Only use if build_type=branch')
+    parser.add_argument('--skip-release', help='Use if you want to not release')
+    parser.add_argument('--skip-all', help='User if you want to skip ALL tasks')
     parser.add_argument('-c', '--config', type=str, help='Path config file. Default is /etc/default/versioner')
     parser.add_argument('-e', '--endpoint', type=str, help='The endpoint of the versioner web api')
     parser.add_argument('-p', '--project-name', type=str, help='The name of project')

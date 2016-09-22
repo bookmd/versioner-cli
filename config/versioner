@@ -3,9 +3,6 @@ project_name: "Example Project"
 docker_repo: "owner/repo"
 docker_image: "owner/repo"
 continuous_deployment_hook: "http://jenkins.com/job/ID"
-continuous_deployment_hook_auth:
-  user: "user"
-  password: "password"
 pre_tasks:
   - "get version"
 tasks:
