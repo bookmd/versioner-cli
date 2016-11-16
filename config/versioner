@@ -2,7 +2,8 @@ versioner_endpoint: http://versioner.endpoint
 project_name: "Example Project"
 docker_repo: "owner/repo"
 docker_image: "owner/repo"
-continuous_deployment_hook: "http://jenkins.com/job/ID"
+continuous_deployment_hook_dev: "http://jenkins.com/job/ID"
+continuous_deployment_hook_stage: "http://jenkins.com/job/ID"
 pre_tasks:
   - "get version"
 tasks:
@@ -13,4 +14,4 @@ post_tasks:
   - "publish dockerhub"
   - "release versioner"
   - "release github"
-  - 'trigger cli'
+  - 'trigger cd'
