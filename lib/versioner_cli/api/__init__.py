@@ -65,7 +65,8 @@ class VersionerApi(object):
                                                                                'bump_type': bump_type},
                              verify=False)
         logger.info(result.text)
-        return result.json().get('id'), result.json().get('version').get('formatted')
+        logger.info(result.json().get('version').get('formatted'))
+        return result.json().get('version').get('formatted')
 
     def get_auth_token(self):
         print(self.username, self.password)

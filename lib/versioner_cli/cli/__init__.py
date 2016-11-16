@@ -14,6 +14,7 @@ from os import environ
 from docker import Client
 from docker.errors import APIError
 import requests
+import json
 from requests.auth import HTTPBasicAuth
 from requests.packages.urllib3.exceptions import InsecureRequestWarning, SNIMissingWarning, InsecurePlatformWarning
 from future.utils import raise_with_traceback
@@ -24,6 +25,7 @@ from .tasks import verify_task, Tasks
 from .exceptions import ConfigValueError
 from versioner_cli.api import VersionerApi
 from .enums import ContinuousDeliveryEnum
+from os.path import expanduser, join
 
 logger = logging.getLogger(__name__)
 ch = logging.StreamHandler()
@@ -84,26 +86,19 @@ class VersionerCli(object):
                 raise_with_traceback(APIError('Something went wrong pushing to dockerhub'))
             return True
 
-    @staticmethod
-    def npm_version(version):
+    def npm_version(self, version):
         """
 
         :param version:
         :return:
         """
-        try:
-            logger.info('running npm version')
-            if not PYTHON2:
-                output = run(["npm", "version", version],
-                             shell=True,
-                             check=True,
-                             universal_newlines=True,
-                             stdout=PIPE)
-            else:
-                output = getoutput("npm version {}".format(version)).rstrip('\n')
-                logger.info('output: {}'.format(output))
-        except CalledProcessError as msg:
-            logger.error(msg)
+        logger.info('changing package.json file')
+        data = None
+        with open(join(expanduser('~'), self.config.project_name, 'package.json')) as json_file:
+            data = json.load(json_file)
+            data['version'] = version
+        with open(join(expanduser('~'), self.config.project_name, 'package.json'), 'w') as write_file:
+            json.dump(data, write_file)
 
     def npm_publish(self, tag):
         """
@@ -112,15 +107,26 @@ class VersionerCli(object):
         :return:
         """
         try:
-            logger.info('running npm publish --tag {}'.format(tag))
+            logger.info('running npm publish'.format(tag))
             if not PYTHON2:
-                output = run(["npm", "publish", "--tag", tag],
-                             shell=True,
-                             check=True,
-                             universal_newlines=True,
-                             stdout=PIPE)
+                if self.branch_from == 'master':
+                    output = run(["npm", "publish"],
+                                 shell=True,
+                                 check=True,
+                                 universal_newlines=True,
+                                 stdout=PIPE)
+                else:
+                    output = run(["npm", "publish", "--tag={}".format(self.branch_from)],
+                                 shell=True,
+                                 check=True,
+                                 universal_newlines=True,
+                                 stdout=PIPE)
+
             else:
-                output = getoutput("npm publish --tag {}".format(tag)).rstrip('\n')
+                if self.branch_from == 'master':
+                    output = getoutput("npm publish").rstrip('\n')
+                else:
+                    output = getoutput("npm publish --tag={}".format(self.branch_from)).rstrip('\n')
                 logger.info('output: {}'.format(output))
         except CalledProcessError as msg:
             logger.error(msg)
@@ -133,7 +139,7 @@ class VersionerCli(object):
         :return:
         """
         try:
-            logger.info('running npm publish --follow-flags')
+            logger.info('running git publish --follow-flags')
             if not PYTHON2:
                 output = run(["git", "push", "--follow-flags"], shell=True, check=True, universal_newlines=True,
                              stdout=PIPE)
@@ -166,20 +172,18 @@ class VersionerCli(object):
                 build_num = environ.get('CIRCLE_BUILD_NUM', None)
                 commit_hash = environ.get('CIRCLE_SHA1', None)
                 if build_num is not None:
-                    if self.args.branch_name is not None:
-                        self.version_id, self.version = self.api.bump_version(bump_type=self.branch_from,
+                    if self.args.build_type is not None:
+                        self.version = self.api.bump_version(bump_type=self.branch_from,
                                               project_name=self.config.project_name,
                                               branch_from=self.args.build_type,
                                               build_number=build_num)
-                        logger.info(self.version)
                     else:
-                        self.version_id, self.version = self.api.bump_version(bump_type=self.args.build_type,
+                        self.version = self.api.bump_version(bump_type=self.args.build_type,
                                               project_name=self.config.project_name,
                                               build_number=build_num,
                                               branch_from=self.args.build_type)
-                        logger.info(self.version)
                 else:
-                    self.version_id, self.version = self.api.bump_version(bump_type=self.args.build_type,
+                    self.version = self.api.bump_version(bump_type=self.args.build_type,
                                                          project_name=self.config.project_name,
                                                          branch_from=self.args.build_type,
                                                          merge_to=self.args.merge_to)

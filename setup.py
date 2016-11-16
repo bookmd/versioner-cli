@@ -12,7 +12,7 @@ requires = [
 ]
 
 setup(name='versioner-cli',
-      version='1.0.9',
+      version='1.0.22',
       description='cli tool to interact with versioner service',
       author='Ben Waters',
       author_email='ben@book-md.com',
