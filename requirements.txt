@@ -3,6 +3,6 @@ docker-pycreds==0.2.1
 enum34==1.1.6
 future==0.15.2
 PyYAML==3.12
-requests==2.10.0
+requests==2.20.0
 six==1.10.0
 websocket-client==0.37.0
